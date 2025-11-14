@@ -41,6 +41,22 @@ export function StockCard({ stock }) {
           {stock.sector || 'Unknown'} / {stock.industry || 'Unknown'} / {formatMarketCap(stock.market_cap)}
         </div>
 
+        {/* Verdict Badge */}
+        {stock.verdict && (
+          <span
+            className={`inline-block mt-2 px-2 py-1 rounded text-xs font-semibold ${
+              stock.verdict === 'accumulating'
+                ? 'bg-green-100 text-green-700'
+                : stock.verdict === 'distributing'
+                ? 'bg-red-100 text-red-700'
+                : 'bg-gray-100 text-gray-600'
+            }`}
+          >
+            {stock.verdict === 'accumulating' && '🟢 Accumulating'}
+            {stock.verdict === 'distributing' && '🔻 Distributing'}
+          </span>
+        )}
+
         {/* Key Metrics */}
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">

@@ -24,15 +24,7 @@ export function StockList() {
         sector,
         industry,
         market_cap,
-        price,
-        sales_ttm,
-        profit_margin,
-        price_to_sales,
         stage,
-        ma_30_week,
-        institutional_ownership_pct,
-        institutional_ownership_prev_pct,
-        updated_at,
         insider_summary (
           buys_90d,
           sells_90d,
@@ -70,12 +62,12 @@ export function StockList() {
       }
     })
 
+    // Insider Activity Tab (previously "Accumulating")
     if (filter === 'accumulating') {
       result = result.filter(
         (s) =>
-          s.verdict === 'accumulating' &&
-          s.buys_90d > 0 &&
-          s.net_activity_90d > 0
+          s.verdict === 'accumulating' ||
+          s.verdict === 'distributing'
       )
     }
 
