@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { fetchInsiderForTicker } from '../lib/fetchInsider'
 import { StageIndicator } from './StageIndicator'
 import { Paywall } from './Paywall'
+import { DYResearch } from './DYResearch'
 
 export function StockDetail() {
   const { ticker } = useParams()
@@ -13,6 +14,7 @@ export function StockDetail() {
   const [loading, setLoading] = useState(true)
   const [quotaExceeded, setQuotaExceeded] = useState(false)
   const [userPlan, setUserPlan] = useState('free')
+  const [user, setUser] = useState(null)
 
   const formatMarketCap = (cap) => {
     if (!cap) return "-";
@@ -24,10 +26,40 @@ export function StockDetail() {
     return cap.toString();
   };
 
+  async function refreshTicker(ticker) {
+    const response = await fetch("/functions/v1/fetch_stock_data", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ticker }),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to refresh stock data: ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    return result
+  }
+
   useEffect(() => {
+    // Get current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+    })
+
     async function load() {
       setLoading(true)
 
+      // Refresh stock data (price, volume) via Supabase Edge Function
+      try {
+        await refreshTicker(ticker)
+      } catch (e) {
+        console.warn('Stock data refresh failed:', e.message)
+      }
+
+      // Fetch insider data
       try {
         await fetchInsiderForTicker(ticker) // triggers EDGAR + summary update
       } catch (e) {
@@ -225,6 +257,9 @@ export function StockDetail() {
           </div>
         )}
       </div>
+
+      {/* D.Y. Research System */}
+      <DYResearch ticker={ticker} stock={stock} user={user} />
     </div>
   )
 }
